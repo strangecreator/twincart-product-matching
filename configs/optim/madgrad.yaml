@@ -1,0 +1,3 @@
+name: madgrad
+momentum: 0.9
+weight_decay: 1.0e-5

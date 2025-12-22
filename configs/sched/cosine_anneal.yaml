@@ -1,0 +1,6 @@
+name: cosine_anneal
+
+# You’ll set lr_start/lr_end in train.yaml per modality
+lr_start: null
+lr_end: null
+warmup_steps: 0

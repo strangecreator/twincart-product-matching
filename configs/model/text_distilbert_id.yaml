@@ -1,0 +1,13 @@
+type: text
+
+backbone: "distilbert-base-indonesian"
+use_fast_tokenizer: true
+
+embedding_dim: 768
+
+pooling:
+  type: cls
+
+head:
+  type: linear
+  dropout: 0.0

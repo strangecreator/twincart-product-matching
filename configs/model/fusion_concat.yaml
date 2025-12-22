@@ -1,0 +1,7 @@
+type: fusion
+
+# concat image/text (both are L2-normalized)
+method: concat
+
+# final L2 normalization after concat
+l2_after_concat: true

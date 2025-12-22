@@ -1,0 +1,62 @@
+defaults:
+  - paths@paths: default
+  - data@data: shopee
+  - transforms@transforms: shopee
+
+  - model@image_model: image_nfnet_f0_gem
+  - model@text_model: text_distilbert_id
+  - model@fusion_model: fusion_concat
+
+  - optim@optim: madgrad
+  - sched@sched: cosine_anneal
+  - loss@loss: multi_similarity
+  - loss/xbm@xbm: xbm
+
+  - logging@logging: mlflow
+  - _self_
+
+task: train
+
+seed: ${data.seed}
+num_folds: ${data.num_folds}
+
+# train separately by default
+mode: "image" # one of: image, text
+
+trainer:
+  accelerator: "auto"
+  devices: 1
+  precision: "16-mixed"
+  max_epochs: 30
+  log_every_n_steps: 50
+  gradient_clip_val: 1.0
+
+dataloader:
+  num_workers: 8
+  pin_memory: true
+  persistent_workers: true
+
+image_train:
+  batch_size: 32
+  lr_start: 1.0e-5
+  lr_end: 1.0e-8
+  use_xbm: true
+
+  # metric learning batching trick: sample within-group pairs
+  pair_sampling:
+    enabled: true
+    # implement later: samples chosen within same label_group
+    strategy: "within_group_pairs"
+
+text_train:
+  batch_size: 256
+  lr_start: 1.0e-4
+  lr_end: 1.0e-8
+  use_xbm: false
+
+# Hydra output control (don’t spam repo root)
+hydra:
+  run:
+    dir: ${paths.hydra_out_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task}_${mode}
+  sweep:
+    dir: ${paths.hydra_out_dir}/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}

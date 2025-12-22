@@ -1,0 +1,63 @@
+stages:
+  prepare_folds:
+    cmd: python -m twincart.commands prepare_folds
+    deps:
+      - configs/data/shopee.yaml
+      - src/twincart/data/folds.py
+      - data/raw/train.csv
+    outs:
+      - data/interim/train_folds.parquet
+
+  train_image:
+    cmd: python -m twincart.commands train mode=image
+    deps:
+      - configs/train.yaml
+      - configs/model/image_nfnet_f0_gem.yaml
+      - configs/loss/multi_similarity.yaml
+      - src/twincart/train
+      - data/interim/train_folds.parquet
+      - data/raw/train_images
+      - data/raw/train.csv
+    outs:
+      - models/checkpoints/image
+
+  train_text:
+    cmd: python -m twincart.commands train mode=text
+    deps:
+      - configs/train.yaml
+      - configs/model/text_distilbert_id.yaml
+      - configs/loss/multi_similarity.yaml
+      - src/twincart/train
+      - data/interim/train_folds.parquet
+      - data/raw/train.csv
+    outs:
+      - models/checkpoints/text
+
+  export_onnx:
+    cmd: python -m twincart.commands export format=onnx
+    deps:
+      - configs/export.yaml
+      - models/checkpoints/image
+      - models/checkpoints/text
+      - data/export_examples
+    outs:
+      - models/onnx
+
+  export_tensorrt:
+    cmd: python -m twincart.commands export format=tensorrt
+    deps:
+      - configs/export.yaml
+      - models/onnx
+      - data/export_examples
+    outs:
+      - models/tensorrt
+
+  infer:
+    cmd: python -m twincart.commands infer
+    deps:
+      - configs/infer.yaml
+      - models/tensorrt
+      - data/raw/test.csv
+      - data/raw/test_images
+    outs:
+      - data/artifacts/submissions/submission.csv

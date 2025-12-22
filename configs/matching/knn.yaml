@@ -1,0 +1,5 @@
+engine: faiss
+metric: cosine
+
+# 7th-place uses k=52 (then postprocess cap=50)
+k: 52

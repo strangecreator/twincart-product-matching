@@ -1,0 +1,19 @@
+name: shopee_product_matching
+
+raw_dir: ${paths.data_dir}/raw
+interim_dir: ${paths.data_dir}/interim
+
+train_csv: ${data.raw_dir}/train.csv
+test_csv: ${data.raw_dir}/test.csv
+
+train_images_dir: ${data.raw_dir}/train_images
+test_images_dir: ${data.raw_dir}/test_images
+
+# Folds artifact (created once and reused)
+folds_path: ${data.interim_dir}/train_folds.parquet
+
+num_folds: 5
+seed: 42
+
+# DVC remote name (you configure it via `dvc remote add -d ...`)
+dvc_remote: gdrive

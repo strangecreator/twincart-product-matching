@@ -1,0 +1,6 @@
+enabled: true
+tracking_uri: "http://127.0.0.1:8080"
+experiment_name: "twincart-product-matching"
+
+# also save plots locally into plots/ directory
+save_plots: true

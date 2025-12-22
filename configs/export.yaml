@@ -1,0 +1,20 @@
+defaults:
+  - paths: default
+  - _self_
+
+task: export
+
+# onnx | tensorrt
+format: "onnx"
+
+# where the best checkpoints are (later you’ll standardize this)
+checkpoints_dir: ${paths.models_dir}/checkpoints
+onnx_dir: ${paths.models_dir}/onnx
+tensorrt_dir: ${paths.models_dir}/tensorrt
+
+# sample inputs for export (must be tracked via DVC)
+example_inputs_dir: ${paths.data_dir}/export_examples
+
+trt:
+  fp16: true
+  max_batch_size: 32

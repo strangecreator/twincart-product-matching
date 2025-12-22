@@ -1,0 +1,52 @@
+image:
+  input_size: 420
+
+  train:
+    - name: Rotate
+      limit: 20
+      p: 0.5
+    - name: ColorJitter
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+      p: 0.5
+    - name: RandomBrightnessContrast
+      brightness_limit: 0.2
+      contrast_limit: 0.2
+      p: 0.5
+    - name: RandomGamma
+      gamma_limit: [80, 120]
+      p: 0.5
+    - name: HorizontalFlip
+      p: 0.5
+    - name: CoarseDropout
+      num_holes_range: [1, 8]
+      hole_height_range: [0.05, 0.15]
+      hole_width_range: [0.05, 0.15]
+      p: 0.5
+    - name: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      p: 1.0
+
+  infer:
+    - name: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      p: 1.0
+
+text:
+  max_length: 64
+
+  aug:
+    p: 0.1
+    ops:
+      - name: random_delete
+        min_len: 3
+      - name: random_swap
+        min_len: 3
+      - name: random_swap_plus_delete
+        min_len: 3
+      - name: random_swap_twice
+        min_len: 3
