@@ -113,7 +113,8 @@ uv run hf auth login
 
 ```
 mkdir -p mlruns
-uv run mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
+uv run mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root ./mlruns
 ```
 
 #### 7. Downloading data
