@@ -217,7 +217,7 @@ def export_onnx_cmd(overrides: tuple[str, ...]) -> None:
     text_ckpt = pathlib.Path(export_cfg.text_ckpt) if export_cfg.text_ckpt else None
     out_dir = pathlib.Path(export_cfg.out_dir)
 
-    # pull checkpoints if missing
+    # pulling checkpoints if missing
     to_pull: list[pathlib.Path] = []
     if image_ckpt is not None:
         to_pull.append(image_ckpt)
@@ -258,7 +258,6 @@ def build_mlflow_cmd(overrides: tuple[str, ...]) -> None:
     image_onnx = pathlib.Path(serve_cfg.image_onnx)
     text_onnx = pathlib.Path(serve_cfg.text_onnx)
 
-    # pull entire ONNX directories (important because image model often has model.onnx.data)
     ensure_exists_or_pull([image_onnx.parent, text_onnx.parent], remote=remote)
 
     from twincart.serving.build_mlflow import build_mlflow_model
