@@ -1,33 +1,37 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Literal
+import pathlib
+import typing as tp
 
-import pandas as pd
-import pytorch_lightning as pl
+# torch & related imports
 import torch
+import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
-from twincart.data.dataset_image import ShopeeImageDataset
+# utility imports
+import pandas as pd
+
+# local imports
 from twincart.data.dataset_text import ShopeeTextDataset
+from twincart.data.dataset_image import ShopeeImageDataset
 from twincart.train.sampler_pairs import GroupPairBatchSampler
 
 
 def _make_label_map(df: pd.DataFrame) -> dict[str, int]:
     groups = sorted({str(x) for x in df["label_group"].tolist()})
-    return {g: i for i, g in enumerate(groups)}
+    return {group: i for i, group in enumerate(groups)}
 
 
 class TwinCartDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        mode: Literal["image", "text"],
+        mode: tp.Literal["image", "text"],
         df: pd.DataFrame,
         fold_index: int,
-        images_dir: Path,
-        transforms_cfg: Any,
-        image_model_cfg: Any,
-        text_model_cfg: Any,
+        images_dir: pathlib.Path,
+        transforms_config: tp.Any,
+        image_model_config: tp.Any,
+        text_model_config: tp.Any,
         batch_size: int,
         num_workers: int,
         seed: int,
@@ -35,13 +39,14 @@ class TwinCartDataModule(pl.LightningDataModule):
         text_aug_p: float,
     ) -> None:
         super().__init__()
+
         self.mode = mode
         self.df = df
         self.fold_index = int(fold_index)
         self.images_dir = images_dir
-        self.transforms_cfg = transforms_cfg
-        self.image_model_cfg = image_model_cfg
-        self.text_model_cfg = text_model_cfg
+        self.transforms_config = transforms_config
+        self.image_model_config = image_model_config
+        self.text_model_config = text_model_config
         self.batch_size = int(batch_size)
         self.num_workers = int(num_workers)
         self.seed = int(seed)
@@ -50,8 +55,8 @@ class TwinCartDataModule(pl.LightningDataModule):
 
         self.label_to_id: dict[str, int] = {}
 
-        self.train_ds = None
-        self.val_ds = None
+        self.train_dataset = None
+        self.val_dataset = None
 
     def setup(self, stage: str | None = None) -> None:
         if "fold" not in self.df.columns:
@@ -65,27 +70,27 @@ class TwinCartDataModule(pl.LightningDataModule):
         if self.mode == "image":
             from twincart.data.transforms import build_image_transforms
 
-            tfm_train = build_image_transforms(self.transforms_cfg, mode="train")
-            tfm_val = build_image_transforms(self.transforms_cfg, mode="infer")
+            tfm_train = build_image_transforms(self.transforms_config, mode="train")
+            tfm_val = build_image_transforms(self.transforms_config, mode="infer")
 
-            self.train_ds = ShopeeImageDataset(train_df, self.images_dir, tfm_train, self.label_to_id)
-            self.val_ds = ShopeeImageDataset(val_df, self.images_dir, tfm_val, self.label_to_id)
+            self.train_dataset = ShopeeImageDataset(train_df, self.images_dir, tfm_train, self.label_to_id)
+            self.val_dataset = ShopeeImageDataset(val_df, self.images_dir, tfm_val, self.label_to_id)
         else:
-            tok_name = str(self.text_model_cfg.backbone)
-            max_len = int(self.transforms_cfg.text.max_length)
-            use_fast = bool(self.text_model_cfg.use_fast_tokenizer)
+            tokenizer_name = str(self.text_model_config.backbone)
+            max_len = int(self.transforms_config.text.max_length)
+            use_fast = bool(self.text_model_config.use_fast_tokenizer)
 
-            self.train_ds = ShopeeTextDataset(
+            self.train_dataset = ShopeeTextDataset(
                 train_df,
-                tokenizer_name=tok_name,
+                tokenizer_name=tokenizer_name,
                 max_length=max_len,
                 label_to_id=self.label_to_id,
                 aug_p=self.text_aug_p,
                 use_fast=use_fast,
             )
-            self.val_ds = ShopeeTextDataset(
+            self.val_dataset = ShopeeTextDataset(
                 val_df,
-                tokenizer_name=tok_name,
+                tokenizer_name=tokenizer_name,
                 max_length=max_len,
                 label_to_id=self.label_to_id,
                 aug_p=0.0,
@@ -93,13 +98,15 @@ class TwinCartDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self) -> DataLoader:
-        assert self.train_ds is not None
+        assert self.train_dataset is not None
+
         if self.use_pair_sampler:
             train_df = self.df[self.df["fold"] != self.fold_index].reset_index(drop=True)
             labels = [self.label_to_id[str(x)] for x in train_df["label_group"].astype(str).tolist()]
             sampler = GroupPairBatchSampler(labels, batch_size=self.batch_size, seed=self.seed)
+
             return DataLoader(
-                self.train_ds,
+                self.train_dataset,
                 batch_sampler=sampler,
                 num_workers=self.num_workers,
                 pin_memory=True,
@@ -108,7 +115,7 @@ class TwinCartDataModule(pl.LightningDataModule):
             )
 
         return DataLoader(
-            self.train_ds,
+            self.train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
@@ -118,9 +125,10 @@ class TwinCartDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self) -> DataLoader:
-        assert self.val_ds is not None
+        assert self.val_dataset is not None
+
         return DataLoader(
-            self.val_ds,
+            self.val_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -130,18 +138,20 @@ class TwinCartDataModule(pl.LightningDataModule):
         )
 
 
-def _collate(mode: Literal["image", "text"]):
-    def collate(batch):
+def _collate(mode: tp.Literal["image", "text"]) -> tp.Callable:
+    def collate(batch) -> dict:
         if mode == "image":
-            images = torch.stack([b.image for b in batch], dim=0)
-            labels = torch.tensor([b.label for b in batch], dtype=torch.long)
-            posting_ids = [b.posting_id for b in batch]
+            images = torch.stack([item.image for item in batch], dim=0)
+            labels = torch.tensor([item.label for item in batch], dtype=torch.long)
+            posting_ids = [item.posting_id for item in batch]
+
             return {"image": images, "label": labels, "posting_id": posting_ids}
 
-        input_ids = torch.stack([b.input_ids for b in batch], dim=0)
-        attention_mask = torch.stack([b.attention_mask for b in batch], dim=0)
-        labels = torch.tensor([b.label for b in batch], dtype=torch.long)
-        posting_ids = [b.posting_id for b in batch]
+        input_ids = torch.stack([item.input_ids for item in batch], dim=0)
+        attention_mask = torch.stack([item.attention_mask for item in batch], dim=0)
+        labels = torch.tensor([item.label for item in batch], dtype=torch.long)
+        posting_ids = [item.posting_id for item in batch]
+
         return {
             "input_ids": input_ids,
             "attention_mask": attention_mask,

@@ -20,8 +20,7 @@ task: train
 seed: ${data.seed}
 num_folds: ${data.num_folds}
 
-# train separately by default
-mode: "image" # one of: image, text
+mode: "image" # image or text
 
 trainer:
   accelerator: "auto"
@@ -42,10 +41,8 @@ image_train:
   lr_end: 1.0e-8
   use_xbm: true
 
-  # metric learning batching trick: sample within-group pairs
   pair_sampling:
     enabled: true
-    # implement later: samples chosen within same label_group
     strategy: "within_group_pairs"
 
 text_train:
@@ -54,7 +51,6 @@ text_train:
   lr_end: 1.0e-8
   use_xbm: false
 
-# Hydra output control (don’t spam repo root)
 hydra:
   run:
     dir: ${paths.hydra_out_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task}_${mode}

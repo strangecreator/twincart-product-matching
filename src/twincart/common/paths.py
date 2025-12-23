@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -16,17 +16,16 @@ class ProjectPaths:
     submissions_dir: Path
 
     @staticmethod
-    def from_cfg(cfg) -> ProjectPaths:
-        # cfg.paths.* comes from configs/paths/default.yaml
-        project_root = Path(cfg.paths.project_root).resolve()
-        data_dir = Path(cfg.paths.data_dir).resolve()
-        models_dir = Path(cfg.paths.models_dir).resolve()
-        plots_dir = Path(cfg.paths.plots_dir).resolve()
+    def from_cfg(config) -> ProjectPaths:
+        project_root = Path(config.paths.project_root).resolve()
+        data_dir = Path(config.paths.data_dir).resolve()
+        models_dir = Path(config.paths.models_dir).resolve()
+        plots_dir = Path(config.paths.plots_dir).resolve()
 
-        artifacts_dir = Path(cfg.paths.artifacts_dir).resolve()
-        embeddings_dir = Path(cfg.paths.embeddings_dir).resolve()
-        indices_dir = Path(cfg.paths.indices_dir).resolve()
-        submissions_dir = Path(cfg.paths.submissions_dir).resolve()
+        artifacts_dir = Path(config.paths.artifacts_dir).resolve()
+        embeddings_dir = Path(config.paths.embeddings_dir).resolve()
+        indices_dir = Path(config.paths.indices_dir).resolve()
+        submissions_dir = Path(config.paths.submissions_dir).resolve()
 
         return ProjectPaths(
             project_root=project_root,
@@ -40,7 +39,7 @@ class ProjectPaths:
         )
 
     def ensure_dirs(self) -> None:
-        for p in [
+        for path in [
             self.data_dir,
             self.models_dir,
             self.plots_dir,
@@ -49,4 +48,4 @@ class ProjectPaths:
             self.indices_dir,
             self.submissions_dir,
         ]:
-            p.mkdir(parents=True, exist_ok=True)
+            path.mkdir(parents=True, exist_ok=True)

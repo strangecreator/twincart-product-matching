@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Any, Dict
 
+# utility imports
 import pandas as pd
+
+# torch & related imports
 import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
@@ -13,6 +15,7 @@ from transformers import AutoTokenizer
 def _random_delete(words: list[str]) -> list[str]:
     if len(words) <= 2:
         return words
+
     i = random.randrange(len(words))
     return [w for j, w in enumerate(words) if j != i]
 
@@ -20,9 +23,12 @@ def _random_delete(words: list[str]) -> list[str]:
 def _random_swap(words: list[str]) -> list[str]:
     if len(words) <= 2:
         return words
+
     i, j = random.sample(range(len(words)), 2)
     out = words[:]
+
     out[i], out[j] = out[j], out[i]
+
     return out
 
 
@@ -31,6 +37,7 @@ def augment_title(title: str, p: float) -> str:
         return title
 
     words = title.split()
+
     if len(words) <= 2:
         return title
 
@@ -40,9 +47,7 @@ def augment_title(title: str, p: float) -> str:
         lambda w: _random_delete(_random_swap(w)),
         lambda w: _random_swap(_random_swap(w)),
     ]
-    op = random.choice(ops)
-    out = op(words)
-    return " ".join(out)
+    return " ".join(random.choice(ops)(words))
 
 
 @dataclass(frozen=True)
@@ -73,8 +78,8 @@ class ShopeeTextDataset(Dataset[TextSample]):
     def __len__(self) -> int:
         return len(self.df)
 
-    def __getitem__(self, idx: int) -> TextSample:
-        row = self.df.iloc[idx]
+    def __getitem__(self, index: int) -> TextSample:
+        row = self.df.iloc[index]
         posting_id = str(row["posting_id"])
         label_group = str(row["label_group"])
         title = str(row["title"])

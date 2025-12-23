@@ -6,10 +6,6 @@ plots_dir: ${paths.project_root}/plots
 
 hydra_out_dir: ${paths.project_root}/outputs
 
-# Triton (no docker). You’ll point tritonserver to this repo folder.
-triton_model_repo: ${paths.project_root}/deploy/triton/model_repository
-
-# Common artifacts
 artifacts_dir: ${paths.data_dir}/artifacts
 embeddings_dir: ${paths.artifacts_dir}/embeddings
 indices_dir: ${paths.artifacts_dir}/indices

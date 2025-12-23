@@ -229,12 +229,15 @@ uv-cache/
 # Hydra outputs
 outputs/
 multirun/
+resolved_config.json
+resolved_config.yaml
 
 # Lightning
 lightning_logs/
 
 # MLflow local artifacts
 mlruns/
+mlflow.db
 
 # DVC
 .dvc/cache/
@@ -242,16 +245,16 @@ mlruns/
 .dvc/config.local
 
 # Data & artifacts
-/data/*
-/models/*
-/artifacts/*
+/data
+/artifacts
+/models
+/lightning_logs
+/mlruns
+/plots
 
-!/data/*.dvc
-!/data/.gitignore
-!/models/*.dvc
-!/models/.gitignore
-!/artifacts/*.dvc
-!/artifacts/.gitignore
+!.dvc/
+!.dvcignore
+!*.dvc
 
 # Exported model files
 *.ckpt
@@ -271,3 +274,6 @@ mlruns/
 
 # OS & editor
 .DS_Store
+
+# other
+/test.py

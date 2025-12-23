@@ -1,10 +1,6 @@
 enabled: true
-
-# number of nearest neighbors used to expand each query embedding
-topk: 10
+topk: 10 # number of nearest neighbors used to expand each query embedding
 
 # alpha coefficient in: q' = normalize(q + alpha * mean(nn))
 alpha: 3.0
-
-# iterations (some pipelines do 1–2 passes; start with 1)
 iters: 1

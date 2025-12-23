@@ -1,15 +1,11 @@
 defaults:
   - paths: default
-  - _self_
 
-task: serve
-
-tritonserver:
-  binary: ${oc.env:TRITONSERVER_BIN,tritonserver}
-  model_repository: ${paths.triton_model_repo}
-
-  http_port: 8000
-  grpc_port: 8001
-  metrics_port: 8002
-
-  log_verbose: 0
+serve:
+  image_onnx: ${paths.models_dir}/onnx/image/fold_0/model.onnx
+  text_onnx: ${paths.models_dir}/onnx/text/fold_0/model.onnx
+  tokenizer: cahya/distilbert-base-indonesian
+  out_dir: ${paths.models_dir}/mlflow/twincart_onnx_matcher
+  image_h: 420
+  image_w: 420
+  text_max_len: 64

@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import shutil
+import pathlib
+import tempfile
+
+# torch & related imports
+from transformers import AutoTokenizer
+
+# click & related imports
+import click
+
+# mlflow & related imports
+import mlflow
+
+# local imports
+from twincart.serving.onnx_pyfunc import PreprocessCfg, TwinCartOnnxEncoderPyFunc
+
+
+def _rm_rf(path: pathlib.Path) -> None:
+    if path.exists():
+        shutil.rmtree(path)
+
+
+@click.command()
+@click.option("--image-onnx", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True)
+@click.option("--text-onnx", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True)
+@click.option("--tokenizer", "tokenizer_name", type=str, required=True)
+@click.option("--out-dir", type=click.Path(dir_okay=True, path_type=pathlib.Path), required=True)
+@click.option("--image-h", type=int, default=420, show_default=True)
+@click.option("--image-w", type=int, default=420, show_default=True)
+@click.option("--text-max-len", type=int, default=64, show_default=True)
+@click.option("--force", is_flag=True, help="Overwrite out-dir if exists.")
+def main(
+    image_onnx: pathlib.Path,
+    text_onnx: pathlib.Path,
+    tokenizer_name: str,
+    out_dir: pathlib.Path,
+    image_h: int,
+    image_w: int,
+    text_max_len: int,
+    force: bool,
+):
+    if force:
+        _rm_rf(out_dir)
+
+    out_dir.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(prefix="twincart-mlflow-stage-") as temp_dir:
+        stage = pathlib.Path(temp_dir)
+
+        stage_image_path = stage / "image_onnx"
+        stage_text_path = stage / "text_onnx"
+        stage_tokenizer_path = stage / "tokenizer"
+
+        stage_image_path.mkdir(parents=True, exist_ok=True)
+        stage_text_path.mkdir(parents=True, exist_ok=True)
+        stage_tokenizer_path.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy2(image_onnx, stage_image_path / "model.onnx")
+        shutil.copy2(text_onnx, stage_text_path / "model.onnx")
+
+        AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True).save_pretrained(stage_tokenizer_path)
+
+        cfg = PreprocessCfg(image_h=image_h, image_w=image_w, text_max_len=text_max_len)
+        py_model = TwinCartOnnxEncoderPyFunc(cfg=cfg, tokenizer_name_or_path=tokenizer_name)
+
+        mlflow.pyfunc.save_model(
+            path=str(out_dir),
+            python_model=py_model,
+            artifacts={
+                "image_onnx": str(stage_image_path),
+                "text_onnx": str(stage_text_path),
+                "tokenizer": str(stage_tokenizer_path),
+            },
+            pip_requirements=None,
+        )
+
+    print(f"Saved MLflow model to: {out_dir}.")
+
+
+if __name__ == "__main__":
+    main()

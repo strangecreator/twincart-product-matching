@@ -1,20 +1,15 @@
 defaults:
-  - paths: default
+  - paths@paths: default
+  - model@image_model: image_nfnet_f0_gem
+  - model@text_model: text_distilbert_id
   - _self_
 
-task: export
-
-# onnx | tensorrt
-format: "onnx"
-
-# where the best checkpoints are (later you’ll standardize this)
-checkpoints_dir: ${paths.models_dir}/checkpoints
-onnx_dir: ${paths.models_dir}/onnx
-tensorrt_dir: ${paths.models_dir}/tensorrt
-
-# sample inputs for export (must be tracked via DVC)
-example_inputs_dir: ${paths.data_dir}/export_examples
-
-trt:
-  fp16: true
-  max_batch_size: 32
+export:
+  opset: 17
+  image:
+    input_h: 420
+    input_w: 420
+    output_dir: ${paths.models_dir}/onnx/image
+  text:
+    max_len: 64
+    output_dir: ${paths.models_dir}/onnx/text

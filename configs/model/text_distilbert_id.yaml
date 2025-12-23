@@ -1,6 +1,6 @@
 type: text
 
-backbone: "distilbert-base-indonesian"
+backbone: "cahya/distilbert-base-indonesian"
 use_fast_tokenizer: true
 
 embedding_dim: 768

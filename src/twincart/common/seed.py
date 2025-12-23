@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import random
 
+# numpy & related imports
 import numpy as np
 
 
@@ -19,7 +20,6 @@ def seed_everything(seed: int) -> None:
         torch.backends.cudnn.deterministic = False
         torch.backends.cudnn.benchmark = True
 
-        torch.set_float32_matmul_precision("high")
+        torch.set_float32_matmul_precision("high")  # A100
     except Exception:
-        # torch not installed in minimal env
-        pass
+        pass  # torch is not installed

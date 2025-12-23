@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# torch & related imports
 import torch
 from pytorch_metric_learning import losses, miners
 
@@ -24,6 +25,7 @@ class XbmCfg:
 class MetricLearningLoss(torch.nn.Module):
     def __init__(self, ms: MultiSimilarityCfg, xbm: XbmCfg, embedding_size: int) -> None:
         super().__init__()
+
         base_loss = losses.MultiSimilarityLoss(alpha=ms.alpha, beta=ms.beta, base=ms.base)
 
         use_miner = ms.miner_enabled and (not xbm.enabled)
@@ -42,4 +44,5 @@ class MetricLearningLoss(torch.nn.Module):
         if self.miner is not None:
             hard_pairs = self.miner(embeddings, labels)
             return self.loss(embeddings, labels, hard_pairs)
+
         return self.loss(embeddings, labels)

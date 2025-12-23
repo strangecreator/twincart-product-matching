@@ -2085,6 +2085,21 @@ wheels = [
 ]
 
 [[package]]
+name = "onnx-ir"
+version = "0.1.13"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "onnx" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/c2/6db31dc3132e540076f15ed0cdf4a8db7ab75557f4d6c19eda655cac666e/onnx_ir-0.1.13.tar.gz", hash = "sha256:e08f00d30579bdbff2152692a6f1bc1f0523d3321ac6348aadcd40595e56231e", size = 115872, upload-time = "2025-12-17T18:03:13.86Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/b6/f60fd79ff5bc617d49db1378eb7c4c315b21b786502674e4a2d48e64491a/onnx_ir-0.1.13-py3-none-any.whl", hash = "sha256:2791493d1529fdbea60c257dc7bc0933dc812e6d68f4976d8b59aa7b4c2de8cf", size = 133063, upload-time = "2025-12-17T18:03:12.268Z" },
+]
+
+[[package]]
 name = "onnxruntime"
 version = "1.23.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2107,6 +2122,23 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/3c/35/4e40f2fba272a6698d62be2cd21ddc3675edfc1a4b9ddefcc4648f115315/onnxruntime-1.23.2-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:76ff670550dc23e58ea9bc53b5149b99a44e63b34b524f7b8547469aaa0dcb8c", size = 15226915, upload-time = "2025-10-22T03:46:27.773Z" },
     { url = "https://files.pythonhosted.org/packages/ef/88/9cc25d2bafe6bc0d4d3c1db3ade98196d5b355c0b273e6a5dc09c5d5d0d5/onnxruntime-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0f9b4ae77f8e3c9bee50c27bc1beede83f786fe1d52e99ac85aa8d65a01e9b77", size = 17382649, upload-time = "2025-10-22T03:47:02.782Z" },
     { url = "https://files.pythonhosted.org/packages/c0/b4/569d298f9fc4d286c11c45e85d9ffa9e877af12ace98af8cab52396e8f46/onnxruntime-1.23.2-cp312-cp312-win_amd64.whl", hash = "sha256:25de5214923ce941a3523739d34a520aac30f21e631de53bba9174dc9c004435", size = 13470528, upload-time = "2025-10-22T03:47:28.106Z" },
+]
+
+[[package]]
+name = "onnxscript"
+version = "0.5.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "onnx" },
+    { name = "onnx-ir" },
+    { name = "packaging" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2c/f8/358a7d982ea51bc1b0c264f29c08adf096c62ba9f258ba13c954b41c46f5/onnxscript-0.5.7.tar.gz", hash = "sha256:480d572451bc233ed7f742b5005cb0c899594b2fdc28e15167dab26f7fd777ad", size = 596306, upload-time = "2025-12-16T20:47:15.762Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f6/ec/1656ea93be1e50baf429c20603dce249fa3571f3a180407cee79b1afa013/onnxscript-0.5.7-py3-none-any.whl", hash = "sha256:f94a66059c56d13b44908e9b7fd9dae4b4faa6681c784f3fd4c29cfa863e454e", size = 693353, upload-time = "2025-12-16T20:47:17.897Z" },
 ]
 
 [[package]]
@@ -3556,7 +3588,7 @@ grpc = [
 
 [[package]]
 name = "twincart-product-matching"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "dvc" },
@@ -3569,7 +3601,6 @@ dependencies = [
     { name = "pyyaml" },
     { name = "rich" },
     { name = "tqdm" },
-    { name = "tritonclient", extra = ["grpc"] },
 ]
 
 [package.optional-dependencies]
@@ -3585,16 +3616,25 @@ dev = [
 export = [
     { name = "onnx" },
     { name = "onnxruntime" },
+    { name = "onnxscript" },
 ]
 logging = [
     { name = "mlflow" },
 ]
 serve = [
     { name = "grpcio" },
+    { name = "gunicorn" },
+    { name = "mlflow" },
+    { name = "onnxruntime" },
+    { name = "pillow" },
+    { name = "tokenizers" },
+    { name = "transformers" },
+    { name = "tritonclient", extra = ["grpc"] },
 ]
 train = [
     { name = "albumentations" },
     { name = "madgrad" },
+    { name = "matplotlib" },
     { name = "opencv-python-headless" },
     { name = "pyarrow" },
     { name = "pytorch-lightning" },
@@ -3607,6 +3647,11 @@ train = [
     { name = "transformers" },
 ]
 
+[package.dev-dependencies]
+serve = [
+    { name = "tritonclient", extra = ["grpc"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "albumentations", marker = "extra == 'train'", specifier = ">=1.4" },
@@ -3616,16 +3661,22 @@ requires-dist = [
     { name = "faiss-cpu", specifier = ">=1.8.0" },
     { name = "flake8", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "grpcio", marker = "extra == 'serve'", specifier = ">=1.64" },
+    { name = "gunicorn", marker = "extra == 'serve'", specifier = ">=21.2" },
     { name = "hydra-core", specifier = ">=1.3.2" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.13" },
     { name = "madgrad", marker = "extra == 'train'", specifier = ">=1.3" },
+    { name = "matplotlib", marker = "extra == 'train'" },
     { name = "mlflow", marker = "extra == 'logging'", specifier = ">=2.14" },
+    { name = "mlflow", marker = "extra == 'serve'", specifier = ">=2.14" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "omegaconf", specifier = ">=2.3.0" },
     { name = "onnx", marker = "extra == 'export'", specifier = ">=1.16" },
     { name = "onnxruntime", marker = "extra == 'export'", specifier = ">=1.18" },
+    { name = "onnxruntime", marker = "extra == 'serve'", specifier = ">=1.18" },
+    { name = "onnxscript", marker = "extra == 'export'", specifier = ">=0.5.7" },
     { name = "opencv-python-headless", marker = "extra == 'train'", specifier = ">=4.10" },
     { name = "pandas", specifier = ">=2.2" },
+    { name = "pillow", marker = "extra == 'serve'", specifier = ">=10.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
     { name = "pyarrow", marker = "extra == 'train'", specifier = ">=16.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
@@ -3637,14 +3688,19 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
     { name = "scikit-learn", marker = "extra == 'train'", specifier = ">=1.5" },
     { name = "timm", marker = "extra == 'train'", specifier = ">=1.0.7" },
+    { name = "tokenizers", marker = "extra == 'serve'", specifier = ">=0.19" },
     { name = "tokenizers", marker = "extra == 'train'", specifier = ">=0.19" },
     { name = "torch", marker = "extra == 'train'", specifier = ">=2.3" },
     { name = "torchvision", marker = "extra == 'train'", specifier = ">=0.18" },
     { name = "tqdm", specifier = ">=4.66" },
+    { name = "transformers", marker = "extra == 'serve'", specifier = ">=4.43" },
     { name = "transformers", marker = "extra == 'train'", specifier = ">=4.43" },
-    { name = "tritonclient", extras = ["grpc"], specifier = ">=2.50.0,<2.58.0" },
+    { name = "tritonclient", extras = ["grpc"], marker = "extra == 'serve'", specifier = ">=2.50.0,<2.58.0" },
 ]
 provides-extras = ["dev", "train", "logging", "export", "serve"]
+
+[package.metadata.requires-dev]
+serve = [{ name = "tritonclient", extras = ["grpc"], specifier = ">=2.57.0" }]
 
 [[package]]
 name = "typer"

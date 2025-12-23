@@ -62,7 +62,9 @@ Run:
 uv sync
 ```
 
-(`uv` creates `.venv` directory)
+(`uv` creates
+<span style="color:#6ee7b7; background:rgba(110, 231, 183, 0.05); padding: 2px 5px; border-radius: 6px;">.venv</span>
+directory)
 
 #### 4. DVC
 
@@ -91,18 +93,30 @@ uv run dvc remote modify --local gdrive gdrive_client_secret 'CLIENT_SECRET'
 (check with `uv run dvc status -c`)
 
 ```
-git add .gitignore dvc.yaml .dvc/config
+uv run dvc add models lightning_logs mlruns plots data
 ```
 
-#### 5. Precommit (optional)
-
-If you ever want to collaborate, run:
+If you already have files stored in your Google Drive, then you can pull them
+(optional):
 
 ```
-uv run pre-commit install
+uv run dvc pull
 ```
 
-## Downloading data
+#### 5. Hugging Face
+
+```
+uv run hf auth login
+```
+
+#### 6. MLflow
+
+```
+mkdir -p mlruns
+uv run mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
+```
+
+#### 7. Downloading data
 
 ```
 uv tool install kaggle
@@ -123,18 +137,126 @@ uv run python -m zipfile -e data/raw/shopee-product-matching.zip data/raw
 rm -f data/raw/shopee-product-matching.zip
 ```
 
+#### 8. Precommit (optional)
+
+If you ever want to collaborate, run:
+
+```
+uv run pre-commit install
+```
+
 ## Training
 
 ```
-uv sync --extra train --extra dev --extra logging
-uv run pre-commit install
-uv run pre-commit run -a
+uv sync --extra train --extra logging
 ```
+
+Folds preparation:
 
 ```
 uv run python -m twincart.commands prepare_folds
 ```
 
+Image embedding model training:
+
 ```
-uv run python -m twincart.commands train --mode image --fold 0 --overrides model@image_model=image_efficientnet_b0_gem
+uv run python -m twincart.commands train --mode image --fold 0 \
+  --overrides model@image_model=image_efficientnet_b0_gem
 ```
+
+Text embedding model training:
+
+```
+uv run python -m twincart.commands train --mode text --fold 0
+```
+
+Push trained checkpoints to Google Drive (optional):
+
+```
+uv run dvc add models mlruns plots
+uv run dvc push
+```
+
+## Exporting to ONNX
+
+```
+uv sync --extra export
+```
+
+To export models to `ONNX` run:
+
+```
+uv run python -m twincart.export.cli \
+  --image-ckpt models/checkpoints/image/fold_0/best.ckpt \
+  --text-ckpt models/checkpoints/text/fold_0/best.ckpt \
+  --out-dir models/onnx \
+  --image-h 420 --image-w 420 \
+  --text-max-len 64 \
+  --opset 17
+```
+
+## Serving with MLflow
+
+```
+uv sync --extra serve
+```
+
+To build `MLFlow` model, run:
+
+```
+uv run python -m twincart.serving.build_mlflow \
+  --image-onnx models/onnx/image/fold_0/model.onnx \
+  --text-onnx models/onnx/text/fold_0/model.onnx \
+  --tokenizer cahya/distilbert-base-indonesian \
+  --out-dir models/mlflow/twincart_onnx_matcher \
+  --image-h 420 --image-w 420 \
+  --text-max-len 64 \
+  --force
+```
+
+This will start a new `MLflow` server:
+
+```
+uv run mlflow models serve -m models/mlflow/twincart_onnx_matcher --no-conda -h 127.0.0.1 -p 5001
+```
+
+Sample server test:
+
+```
+curl -sS http://127.0.0.1:5001/invocations \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "dataframe_records": [
+      {
+        "image_path": "/workspace/userspace/ml-course/mlops/twincart-product-matching/data/raw/train_images/0a1f72b12dee7317f586fa7f155dd681.jpg",
+        "title": "some product title"
+      }
+    ]
+  }' | python -m json.tool
+```
+
+## Useful Utilities
+
+To commit changes:
+
+```
+uv sync --extra dev
+uv run pre-commit install
+```
+
+To stash changes (if hooks changed something):
+
+```
+uv run pre-commit run --all-files
+git add -A
+```
+
+To print the project tree, use:
+
+```
+tree --prune -I 'train_images|test_images'
+```
+
+## Licence
+
+MIT
