@@ -62,8 +62,8 @@ def main(
 
         AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True).save_pretrained(stage_tokenizer_path)
 
-        cfg = PreprocessCfg(image_h=image_h, image_w=image_w, text_max_len=text_max_len)
-        py_model = TwinCartOnnxEncoderPyFunc(cfg=cfg, tokenizer_name_or_path=tokenizer_name)
+        config = PreprocessCfg(image_h=image_h, image_w=image_w, text_max_len=text_max_len)
+        py_model = TwinCartOnnxEncoderPyFunc(config=config, tokenizer_name_or_path=tokenizer_name)
 
         mlflow.pyfunc.save_model(
             path=str(out_dir),

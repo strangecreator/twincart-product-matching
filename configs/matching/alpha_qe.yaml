@@ -1,6 +1,4 @@
 enabled: true
 topk: 10 # number of nearest neighbors used to expand each query embedding
-
-# alpha coefficient in: q' = normalize(q + alpha * mean(nn))
-alpha: 3.0
+alpha: 3.0 # q' = normalize(q + alpha * mean(nn))
 iters: 1

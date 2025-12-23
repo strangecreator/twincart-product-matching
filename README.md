@@ -217,27 +217,33 @@ uv run python -m twincart.serving.build_mlflow \
 This will start a new `MLflow` server:
 
 ```
-uv run mlflow models serve -m models/mlflow/twincart_onnx_matcher --no-conda -h 127.0.0.1 -p 5001
+uv run mlflow models serve -m models/mlflow/twincart_onnx_matcher \
+  --no-conda -h 127.0.0.1 -p 5001
 ```
 
 Sample server test:
 
 ```
-curl -sS http://127.0.0.1:5001/invocations \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "dataframe_records": [
-      {
-        "image_path": "/workspace/userspace/ml-course/mlops/twincart-product-matching/data/raw/train_images/0a1f72b12dee7317f586fa7f155dd681.jpg",
-        "title": "some product title"
-      }
-    ]
-  }' | python -m json.tool
+URL="http://127.0.0.1:5001/invocations"
+IMG="data/raw/train_images/0a1f72b12dee7317f586fa7f155dd681.jpg"
+
+curl -sS "$URL" \
+  -H "Content-Type: application/json" \
+  -d @- <<JSON | python -m json.tool
+{
+  "dataframe_records": [
+    {
+      "image_path": "$IMG",
+      "title": "some product title"
+    }
+  ]
+}
+JSON
 ```
 
 ## Useful Utilities
 
-To commit changes:
+#### Commit changes:
 
 ```
 uv sync --extra dev
@@ -251,7 +257,7 @@ uv run pre-commit run --all-files
 git add -A
 ```
 
-To print the project tree, use:
+#### Print the project tree, use:
 
 ```
 tree --prune -I 'train_images|test_images'

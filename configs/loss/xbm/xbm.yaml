@@ -1,3 +1,2 @@
-# Cross-batch memory (used for image model in the 7th-place writeup)
 enabled: true
 memory_size: 1024

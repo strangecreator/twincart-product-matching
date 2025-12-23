@@ -4,7 +4,6 @@ alpha: 2.0
 beta: 50.0
 base: 0.5
 
-# For text training: multi-similarity miner
 miner:
   enabled: true
   epsilon: 0.1

@@ -1,9 +1,6 @@
-# Start point; you will tune per-fold or globally later.
 base_threshold: 0.74
 
-# If number of matches < 2, relax threshold (7th-place trick)
 relax_if_matches_lt: 2
 relax_multiplier: 1.2
 
-# Competition cap
 max_matches: 50
