@@ -202,73 +202,78 @@ def train_cmd(mode: str, fold: int, resume: str, overrides: tuple[str, ...]) -> 
     click.echo(f"[Done] Best checkpoint: `{checkpoint_cb.best_model_path}`.")
 
 
-@main.command("export-onnx", context_settings={"show_default": True})
-@click.option("--image-ckpt", type=click.Path(path_type=pathlib.Path, dir_okay=False), default=None)
-@click.option("--text-ckpt", type=click.Path(path_type=pathlib.Path, dir_okay=False), default=None)
-@click.option("--out-dir", type=click.Path(path_type=pathlib.Path, file_okay=False), default="models/onnx")
-@click.option("--image-h", type=int, default=420)
-@click.option("--image-w", type=int, default=420)
-@click.option("--text-max-len", type=int, default=64)
-@click.option("--opset", type=int, default=18)
-@click.option("--dynamo", is_flag=True, help="Use dynamo ONNX exporter (requires onnxscript).")
-def export_onnx_cmd(
-    image_ckpt: pathlib.Path | None,
-    text_ckpt: pathlib.Path | None,
-    out_dir: pathlib.Path,
-    image_h: int,
-    image_w: int,
-    text_max_len: int,
-    opset: int,
-    dynamo: bool,
-) -> None:
+@main.command("export-onnx")
+@click.option("--overrides", multiple=True, help="Hydra overrides, e.g. export.fold=0 export.opset=17")
+def export_onnx_cmd(overrides: tuple[str, ...]) -> None:
+    config = _load_cfg("export", list(overrides))
+
+    paths = ProjectPaths.from_cfg(config)
+    paths.ensure_dirs()
+
+    remote = _dvc_remote_from_cfg(config)
+
+    export_cfg = config.export
+    image_ckpt = pathlib.Path(export_cfg.image_ckpt) if export_cfg.image_ckpt else None
+    text_ckpt = pathlib.Path(export_cfg.text_ckpt) if export_cfg.text_ckpt else None
+    out_dir = pathlib.Path(export_cfg.out_dir)
+
+    # pull checkpoints if missing
+    to_pull: list[pathlib.Path] = []
+    if image_ckpt is not None:
+        to_pull.append(image_ckpt)
+    if text_ckpt is not None:
+        to_pull.append(text_ckpt)
+    if to_pull:
+        ensure_exists_or_pull(to_pull, remote=remote)
+
     from twincart.export.cli import export_onnx_models
 
-    paths = export_onnx_models(
+    out_paths = export_onnx_models(
         image_ckpt=image_ckpt,
         text_ckpt=text_ckpt,
         out_dir=out_dir,
-        image_h=image_h,
-        image_w=image_w,
-        text_max_len=text_max_len,
-        opset=opset,
-        dynamo=dynamo,
+        image_h=int(export_cfg.image_h),
+        image_w=int(export_cfg.image_w),
+        text_max_len=int(export_cfg.text_max_len),
+        opset=int(export_cfg.opset),
+        dynamo=bool(export_cfg.dynamo),
     )
 
     click.echo("Export to ONNX is done:")
-    click.echo(f"\tImage: {paths.image_onnx}")
-    click.echo(f"\tText:  {paths.text_onnx}")
+    click.echo(f"\tImage: {out_paths.image_onnx}")
+    click.echo(f"\tText:  {out_paths.text_onnx}")
 
 
-@main.command("build-mlflow", context_settings={"show_default": True})
-@click.option("--image-onnx", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True)
-@click.option("--text-onnx", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True)
-@click.option("--tokenizer", "tokenizer_name", type=str, required=True, help="HF repo id or local path.")
-@click.option("--out-dir", type=click.Path(path_type=pathlib.Path, file_okay=False), required=True)
-@click.option("--image-h", type=int, default=420)
-@click.option("--image-w", type=int, default=420)
-@click.option("--text-max-len", type=int, default=64)
-@click.option("--force", is_flag=True, help="Overwrite out-dir if exists.")
-def build_mlflow_cmd(
-    image_onnx: pathlib.Path,
-    text_onnx: pathlib.Path,
-    tokenizer_name: str,
-    out_dir: pathlib.Path,
-    image_h: int,
-    image_w: int,
-    text_max_len: int,
-    force: bool,
-) -> None:
+@main.command("build-mlflow")
+@click.option("--overrides", multiple=True, help="Hydra overrides, e.g. serve.fold=0 serve.force=true")
+def build_mlflow_cmd(overrides: tuple[str, ...]) -> None:
+    config = _load_cfg("serve", list(overrides))
+
+    paths = ProjectPaths.from_cfg(config)
+    paths.ensure_dirs()
+
+    remote = _dvc_remote_from_cfg(config)
+
+    serve_cfg = config.serve
+    image_onnx = pathlib.Path(serve_cfg.image_onnx)
+    text_onnx = pathlib.Path(serve_cfg.text_onnx)
+
+    # pull entire ONNX directories (important because image model often has model.onnx.data)
+    ensure_exists_or_pull([image_onnx.parent, text_onnx.parent], remote=remote)
+
     from twincart.serving.build_mlflow import build_mlflow_model
+
+    out_dir = pathlib.Path(serve_cfg.out_dir)
 
     build_mlflow_model(
         image_onnx=image_onnx,
         text_onnx=text_onnx,
-        tokenizer_name=tokenizer_name,
+        tokenizer_name=str(serve_cfg.tokenizer),
         out_dir=out_dir,
-        image_h=image_h,
-        image_w=image_w,
-        text_max_len=text_max_len,
-        force=force,
+        image_h=int(serve_cfg.image_h),
+        image_w=int(serve_cfg.image_w),
+        text_max_len=int(serve_cfg.text_max_len),
+        force=bool(serve_cfg.force),
     )
 
     click.echo(f"Saved MLflow model to: {out_dir.resolve()}.")

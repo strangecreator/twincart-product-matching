@@ -13,6 +13,23 @@ def _rm_rf(path: pathlib.Path) -> None:
         shutil.rmtree(path)
 
 
+def _copy_onnx_bundle(src_onnx: pathlib.Path, dst_dir: pathlib.Path) -> None:
+    dst_dir.mkdir(parents=True, exist_ok=True)
+
+    # main onnx
+    shutil.copy2(src_onnx, dst_dir / "model.onnx")
+
+    # external weights
+    data_path = src_onnx.with_suffix(".onnx.data")
+    if data_path.exists():
+        shutil.copy2(data_path, dst_dir / data_path.name)
+
+    # metadata
+    meta_path = src_onnx.parent / "meta.json"
+    if meta_path.exists():
+        shutil.copy2(meta_path, dst_dir / meta_path.name)
+
+
 def build_mlflow_model(
     image_onnx: pathlib.Path,
     text_onnx: pathlib.Path,
@@ -45,8 +62,8 @@ def build_mlflow_model(
         stage_text_path.mkdir(parents=True, exist_ok=True)
         stage_tokenizer_path.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy2(image_onnx, stage_image_path / "model.onnx")
-        shutil.copy2(text_onnx, stage_text_path / "model.onnx")
+        _copy_onnx_bundle(image_onnx, stage_image_path)
+        _copy_onnx_bundle(text_onnx, stage_text_path)
 
         AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True).save_pretrained(stage_tokenizer_path)
 

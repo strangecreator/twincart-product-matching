@@ -1,11 +1,26 @@
 defaults:
-  - paths: default
+  - paths@paths: default
+  - data@data: shopee
+  - transforms@transforms: shopee
+  - _self_
+
+task: serve
 
 serve:
-  image_onnx: ${paths.models_dir}/onnx/image/fold_0/model.onnx
-  text_onnx: ${paths.models_dir}/onnx/text/fold_0/model.onnx
+  fold: 0
+
+  image_onnx: ${paths.models_dir}/onnx/image/fold_${serve.fold}/model.onnx
+  text_onnx: ${paths.models_dir}/onnx/text/fold_${serve.fold}/model.onnx
+
   tokenizer: cahya/distilbert-base-indonesian
   out_dir: ${paths.models_dir}/mlflow/twincart_onnx_matcher
-  image_h: 420
-  image_w: 420
-  text_max_len: 64
+
+  image_h: ${transforms.image.input_size}
+  image_w: ${transforms.image.input_size}
+  text_max_len: ${transforms.text.max_length}
+
+  force: false
+
+hydra:
+  run:
+    dir: ${paths.hydra_out_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task}

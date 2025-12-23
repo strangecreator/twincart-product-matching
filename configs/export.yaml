@@ -1,15 +1,26 @@
 defaults:
   - paths@paths: default
-  - model@image_model: image_nfnet_f0_gem
-  - model@text_model: text_distilbert_id
+  - data@data: shopee
+  - transforms@transforms: shopee
   - _self_
 
+task: export
+
 export:
+  fold: 0
+
+  image_ckpt: ${paths.models_dir}/checkpoints/image/fold_${export.fold}/best.ckpt
+  text_ckpt: ${paths.models_dir}/checkpoints/text/fold_${export.fold}/best.ckpt
+
+  out_dir: ${paths.models_dir}/onnx
+
+  image_h: ${transforms.image.input_size}
+  image_w: ${transforms.image.input_size}
+  text_max_len: ${transforms.text.max_length}
+
   opset: 17
-  image:
-    input_h: 420
-    input_w: 420
-    output_dir: ${paths.models_dir}/onnx/image
-  text:
-    max_len: 64
-    output_dir: ${paths.models_dir}/onnx/text
+  dynamo: false
+
+hydra:
+  run:
+    dir: ${paths.hydra_out_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}_${task}
