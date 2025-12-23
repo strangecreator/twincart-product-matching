@@ -187,9 +187,9 @@ uv sync --extra export
 To export models to `ONNX` run:
 
 ```
-uv run python -m twincart.export.cli \
+uv run python -m twincart.commands export-onnx \
   --image-ckpt models/checkpoints/image/fold_0/best.ckpt \
-  --text-ckpt models/checkpoints/text/fold_0/best.ckpt \
+  --text-ckpt  models/checkpoints/text/fold_0/best.ckpt \
   --out-dir models/onnx \
   --image-h 420 --image-w 420 \
   --text-max-len 64 \
@@ -205,9 +205,9 @@ uv sync --extra serve
 To build `MLFlow` model, run:
 
 ```
-uv run python -m twincart.serving.build_mlflow \
+uv run python -m twincart.commands build-mlflow \
   --image-onnx models/onnx/image/fold_0/model.onnx \
-  --text-onnx models/onnx/text/fold_0/model.onnx \
+  --text-onnx  models/onnx/text/fold_0/model.onnx \
   --tokenizer cahya/distilbert-base-indonesian \
   --out-dir models/mlflow/twincart_onnx_matcher \
   --image-h 420 --image-w 420 \
