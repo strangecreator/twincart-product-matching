@@ -32,10 +32,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-```bash
-unset VIRTUAL_ENV
-```
-
 (it will save `uv` binary into the
 <span style="color:#6ee7b7; background:rgba(110, 231, 183, 0.05); padding: 2px 5px; border-radius: 6px;">~/.local/bin</span>)
 
@@ -82,6 +78,13 @@ uv sync
 (`uv` creates
 <span style="color:#6ee7b7; background:rgba(110, 231, 183, 0.05); padding: 2px 5px; border-radius: 6px;">.venv</span>
 directory)
+
+If you see warnings about a mismatched or unexpected active environment, clear
+any pre-set virtualenv variables before running `uv`:
+
+```bash
+unset VIRTUAL_ENV
+```
 
 #### 4. DVC
 
