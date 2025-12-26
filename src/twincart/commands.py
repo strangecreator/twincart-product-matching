@@ -278,5 +278,66 @@ def build_mlflow_cmd(overrides: tuple[str, ...]) -> None:
     click.echo(f"Saved MLflow model to: {out_dir.resolve()}.")
 
 
+@main.command("export-trt")
+@click.option("--overrides", multiple=True, help="Hydra overrides, e.g. tensorrt.max_batch=128 tensorrt.workspace_gb=8")
+def export_trt_cmd(overrides: tuple[str, ...]) -> None:
+    config = _load_cfg("tensorrt", list(overrides))
+
+    paths = ProjectPaths.from_cfg(config)
+    paths.ensure_dirs()
+
+    remote = _dvc_remote_from_cfg(config)
+
+    export_config = config.export
+    image_ckpt = pathlib.Path(export_config.image_ckpt) if export_config.image_ckpt else None
+    text_ckpt = pathlib.Path(export_config.text_ckpt) if export_config.text_ckpt else None
+    onnx_out_dir = pathlib.Path(export_config.out_dir)
+
+    # pull checkpoints if missing
+    to_pull: list[pathlib.Path] = []
+    if image_ckpt is not None:
+        to_pull.append(image_ckpt)
+    if text_ckpt is not None:
+        to_pull.append(text_ckpt)
+    if to_pull:
+        ensure_exists_or_pull(to_pull, remote=remote)
+
+    from twincart.export.cli import export_onnx_models
+
+    onnx_paths = export_onnx_models(
+        image_ckpt=image_ckpt,
+        text_ckpt=text_ckpt,
+        out_dir=onnx_out_dir,
+        image_h=int(export_config.image_h),
+        image_w=int(export_config.image_w),
+        text_max_len=int(export_config.text_max_len),
+        opset=int(export_config.opset),
+        dynamo=bool(export_config.dynamo),
+    )
+
+    from twincart.export.tensorrt_export import export_trt_engines
+
+    trt_config = config.tensorrt
+    trt_out_dir = pathlib.Path(trt_config.out_dir)
+    timing_cache = pathlib.Path(trt_config.timing_cache) if str(trt_config.timing_cache) else None
+
+    trt_paths = export_trt_engines(
+        image_onnx=onnx_paths.image_onnx,
+        text_onnx=onnx_paths.text_onnx,
+        out_dir=trt_out_dir,
+        precision=str(trt_config.precision),
+        min_batch=int(trt_config.min_batch),
+        opt_batch=int(trt_config.opt_batch),
+        max_batch=int(trt_config.max_batch),
+        workspace_gb=float(trt_config.workspace_gb),
+        timing_cache=timing_cache,
+        force=bool(trt_config.force),
+    )
+
+    click.echo("Export to TensorRT is done:")
+    click.echo(f"\tImage engine: {trt_paths.image_engine}")
+    click.echo(f"\tText engine:  {trt_paths.text_engine}")
+
+
 if __name__ == "__main__":
     main()

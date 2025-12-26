@@ -596,6 +596,19 @@ wheels = [
 ]
 
 [[package]]
+name = "cuda-toolkit"
+version = "12.8.1"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d4/c8/7dce3a0b15b42a3b58e7d96eb22a687d3bf2c44e01d149a6874629cd9938/cuda_toolkit-12.8.1-py2.py3-none-any.whl", hash = "sha256:adc7906af4ecbf9a352f9dca5734eceb21daec281ccfcf5675e1d2f724fc2cba", size = 2283, upload-time = "2025-08-13T02:03:07.842Z" },
+]
+
+[package.optional-dependencies]
+cudart = [
+    { name = "nvidia-cuda-runtime-cu12", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or sys_platform == 'win32'" },
+]
+
+[[package]]
 name = "cycler"
 version = "0.12.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3362,6 +3375,34 @@ wheels = [
 ]
 
 [[package]]
+name = "tensorrt-cu12"
+version = "10.14.1.48.post1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tensorrt-cu12-bindings", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "tensorrt-cu12-libs", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/42/f2/fd347c7bb16a908e484db8d490d0a717a54aed1160085e5d94708fd95c77/tensorrt_cu12-10.14.1.48.post1.tar.gz", hash = "sha256:5a6d4d78560be7c8fff877711fa8334e8e2b441b702f047ea3107311b9897341", size = 18312, upload-time = "2025-11-07T17:28:45.644Z" }
+
+[[package]]
+name = "tensorrt-cu12-bindings"
+version = "10.14.1.48.post1"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3d/5a/a54babd92b2bc922e50fcb5e58500d0dfec2b0b4dc9eea0215303e908548/tensorrt_cu12_bindings-10.14.1.48.post1-cp311-none-manylinux_2_28_x86_64.whl", hash = "sha256:2a0b5a301c84d1c95e67cede52bb49f44fda02a45c6a4b409fa16f0632394046", size = 879695, upload-time = "2025-11-07T17:30:41.342Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/f6/4957f3930fc9c34bcd229d398e0a131810c568c755bf05598f4e73028baa/tensorrt_cu12_bindings-10.14.1.48.post1-cp312-none-manylinux_2_28_x86_64.whl", hash = "sha256:78da2abb803370147e75045eaeaa2a3f134f5aa7537405f86b22eaa36c0a11ed", size = 879890, upload-time = "2025-11-07T17:29:30.989Z" },
+]
+
+[[package]]
+name = "tensorrt-cu12-libs"
+version = "10.14.1.48.post1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cuda-toolkit", extra = ["cudart"], marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/57/1db9bbf0075a170ee6fcf4c03f8423412ce63e4e25ca8aafb832acffa13d/tensorrt_cu12_libs-10.14.1.48.post1.tar.gz", hash = "sha256:46e9e84e16ca7d89ca572e0900d9480945bb6faaa0c385e6f63e1ae46a834b25", size = 726, upload-time = "2025-11-07T17:23:57.506Z" }
+
+[[package]]
 name = "threadpoolctl"
 version = "3.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3608,6 +3649,7 @@ dev = [
     { name = "black" },
     { name = "flake8" },
     { name = "isort" },
+    { name = "packaging" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -3636,6 +3678,11 @@ serve = [
     { name = "tokenizers" },
     { name = "transformers" },
     { name = "tritonclient", extra = ["grpc"] },
+]
+tensorrt = [
+    { name = "tensorrt-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "tensorrt-cu12-bindings", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "tensorrt-cu12-libs", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
 ]
 train = [
     { name = "albumentations" },
@@ -3682,6 +3729,7 @@ requires-dist = [
     { name = "onnxruntime", marker = "extra == 'serve'", specifier = ">=1.18" },
     { name = "onnxscript", marker = "extra == 'export'", specifier = ">=0.5.7" },
     { name = "opencv-python-headless", marker = "extra == 'train'", specifier = ">=4.10" },
+    { name = "packaging", marker = "extra == 'dev'", specifier = "==25.0" },
     { name = "pandas", specifier = ">=2.2" },
     { name = "pillow", marker = "extra == 'serve'", specifier = ">=10.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
@@ -3696,6 +3744,9 @@ requires-dist = [
     { name = "rich", specifier = ">=13.7" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
     { name = "scikit-learn", marker = "extra == 'train'", specifier = ">=1.5" },
+    { name = "tensorrt-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'tensorrt'", specifier = "==10.14.1.48.post1" },
+    { name = "tensorrt-cu12-bindings", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'tensorrt'", specifier = "==10.14.1.48.post1" },
+    { name = "tensorrt-cu12-libs", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'tensorrt'", specifier = "==10.14.1.48.post1" },
     { name = "timm", marker = "extra == 'export'", specifier = ">=1.0.7" },
     { name = "timm", marker = "extra == 'train'", specifier = ">=1.0.7" },
     { name = "tokenizers", marker = "extra == 'serve'", specifier = ">=0.19" },
@@ -3709,7 +3760,7 @@ requires-dist = [
     { name = "transformers", marker = "extra == 'train'", specifier = ">=4.43" },
     { name = "tritonclient", extras = ["grpc"], marker = "extra == 'serve'", specifier = ">=2.50.0,<2.58.0" },
 ]
-provides-extras = ["dev", "train", "logging", "export", "serve"]
+provides-extras = ["dev", "train", "logging", "export", "tensorrt", "serve"]
 
 [package.metadata.requires-dev]
 serve = [{ name = "tritonclient", extras = ["grpc"], specifier = ">=2.57.0" }]

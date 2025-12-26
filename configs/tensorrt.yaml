@@ -1,0 +1,17 @@
+defaults:
+  - export
+  - _self_
+
+tensorrt:
+  out_dir: models/tensorrt # .engine files
+  precision: fp16 # fp32 or fp16
+
+  # optimization profile
+  min_batch: 1
+  opt_batch: 16
+  max_batch: 64
+
+  workspace_gb: 4.0
+  timing_cache: models/tensorrt/timing.cache
+
+  force: false # overwrite existing engines
