@@ -2,6 +2,20 @@
 
 # TwinCart — Multimodal product matching for E-commerce
 
+TwinCart is an implementation of a
+[7th place solution](https://www.kaggle.com/competitions/shopee-product-matching/writeups/t-nakamura-7th-place-solution)
+from the
+[Kaggle Shopee – Price Match Guarantee competition](https://www.kaggle.com/competitions/shopee-product-matching/overview).
+It matches products using both images and titles by training separate embedding
+models for vision and text, then retrieving nearest neighbors in the joint
+search space to propose “same product” candidates. The project is built to be
+easy to run end to end with uv for dependencies, dvc for datasets and artifacts,
+and optional MLflow serving. It also supports exporting models to ONNX and
+TensorRT for faster inference on GPU.
+
+Tested setup: Ubuntu 22.04 on [Vast.ai](https://vast.ai/) with an NVIDIA A100
+40GB GPU.
+
 ## Installation Guide
 
 ### Python & Environment
@@ -16,6 +30,9 @@ To install it run:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
+```
+
+```bash
 unset VIRTUAL_ENV
 ```
 
@@ -112,6 +129,10 @@ uv run hf auth login
 #### 6. MLflow
 
 ```bash
+uv sync --extra serve
+```
+
+```bash
 mkdir -p mlruns
 uv run mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db \
   --default-artifact-root ./mlruns
@@ -155,7 +176,7 @@ uv sync --extra train --extra logging
 Folds preparation:
 
 ```bash
-uv run python -m twincart.commands prepare_folds
+uv run python -m twincart.commands prepare-folds
 ```
 
 Image embedding model training:
