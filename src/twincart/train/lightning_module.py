@@ -41,7 +41,7 @@ class TwinCartModule(pl.LightningModule):
     ) -> None:
         super().__init__()
 
-        self.save_hyperparameters(ignore=["image_model_cfg", "text_model_cfg", "train_cfg"])
+        self.save_hyperparameters(ignore=["image_model_config", "text_model_config", "train_config"])
 
         self.mode = mode
         self.train_config = train_config

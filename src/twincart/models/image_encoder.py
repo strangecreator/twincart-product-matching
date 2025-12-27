@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 # torch & related imports
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import timm
 
 # local imports
 from twincart.models.pooling import GeMPooling

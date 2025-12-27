@@ -212,10 +212,10 @@ def export_onnx_cmd(overrides: tuple[str, ...]) -> None:
 
     remote = _dvc_remote_from_cfg(config)
 
-    export_cfg = config.export
-    image_ckpt = pathlib.Path(export_cfg.image_ckpt) if export_cfg.image_ckpt else None
-    text_ckpt = pathlib.Path(export_cfg.text_ckpt) if export_cfg.text_ckpt else None
-    out_dir = pathlib.Path(export_cfg.out_dir)
+    export_config = config.export
+    image_ckpt = pathlib.Path(export_config.image_ckpt) if export_config.image_ckpt else None
+    text_ckpt = pathlib.Path(export_config.text_ckpt) if export_config.text_ckpt else None
+    out_dir = pathlib.Path(export_config.out_dir)
 
     # pulling checkpoints if missing
     to_pull: list[pathlib.Path] = []
@@ -232,11 +232,11 @@ def export_onnx_cmd(overrides: tuple[str, ...]) -> None:
         image_ckpt=image_ckpt,
         text_ckpt=text_ckpt,
         out_dir=out_dir,
-        image_h=int(export_cfg.image_h),
-        image_w=int(export_cfg.image_w),
-        text_max_len=int(export_cfg.text_max_len),
-        opset=int(export_cfg.opset),
-        dynamo=bool(export_cfg.dynamo),
+        image_h=int(export_config.image_h),
+        image_w=int(export_config.image_w),
+        text_max_len=int(export_config.text_max_len),
+        opset=int(export_config.opset),
+        dynamo=bool(export_config.dynamo),
     )
 
     click.echo("Export to ONNX is done:")
@@ -254,25 +254,25 @@ def build_mlflow_cmd(overrides: tuple[str, ...]) -> None:
 
     remote = _dvc_remote_from_cfg(config)
 
-    serve_cfg = config.serve
-    image_onnx = pathlib.Path(serve_cfg.image_onnx)
-    text_onnx = pathlib.Path(serve_cfg.text_onnx)
+    serve_config = config.serve
+    image_onnx = pathlib.Path(serve_config.image_onnx)
+    text_onnx = pathlib.Path(serve_config.text_onnx)
 
     ensure_exists_or_pull([image_onnx.parent, text_onnx.parent], remote=remote)
 
     from twincart.serving.build_mlflow import build_mlflow_model
 
-    out_dir = pathlib.Path(serve_cfg.out_dir)
+    out_dir = pathlib.Path(serve_config.out_dir)
 
     build_mlflow_model(
         image_onnx=image_onnx,
         text_onnx=text_onnx,
-        tokenizer_name=str(serve_cfg.tokenizer),
+        tokenizer_name=str(serve_config.tokenizer),
         out_dir=out_dir,
-        image_h=int(serve_cfg.image_h),
-        image_w=int(serve_cfg.image_w),
-        text_max_len=int(serve_cfg.text_max_len),
-        force=bool(serve_cfg.force),
+        image_h=int(serve_config.image_h),
+        image_w=int(serve_config.image_w),
+        text_max_len=int(serve_config.text_max_len),
+        force=bool(serve_config.force),
     )
 
     click.echo(f"Saved MLflow model to: {out_dir.resolve()}.")

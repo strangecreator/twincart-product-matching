@@ -17,9 +17,9 @@ def _build_one(operation: dict[str, tp.Any]) -> A.BasicTransform:
     return getattr(A, name)(**kwargs)
 
 
-def build_image_transforms(cfg_transforms, mode: str) -> A.Compose:
-    input_size = int(cfg_transforms.image.input_size)
-    operations: list[dict[str, tp.Any]] = list(getattr(cfg_transforms.image, mode))
+def build_image_transforms(config_transforms, mode: str) -> A.Compose:
+    input_size = int(config_transforms.image.input_size)
+    operations: list[dict[str, tp.Any]] = list(getattr(config_transforms.image, mode))
 
     return A.Compose(
         [
